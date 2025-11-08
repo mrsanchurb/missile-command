@@ -26,7 +26,7 @@ let gameState = {
   levelTransitioning: false, // Prevent multiple level completions
   waveActive: false, // Track if a wave is in progress
   gameStarted: false, // Track if game has been started at least once
-  timeOfDay: 'morning', // Current time of day
+  timeOfDay: "morning", // Current time of day
   dayTransitionProgress: 0, // 0-1 progress through current time period
 };
 
@@ -40,23 +40,23 @@ let particles = [];
 
 // Function to resize canvas and recalculate dimensions
 function resizeCanvas() {
-  const container = document.querySelector('.container');
+  const container = document.querySelector(".container");
   const maxWidth = window.innerWidth - 40;
   const maxHeight = window.innerHeight - 300; // Leave space for UI
-  
+
   // Set canvas size based on available space, maintaining aspect ratio
   const aspectRatio = 4 / 3;
   let width = Math.min(maxWidth, 1200);
   let height = width / aspectRatio;
-  
+
   if (height > maxHeight) {
     height = maxHeight;
     width = height * aspectRatio;
   }
-  
+
   canvas.width = width;
   canvas.height = height;
-  
+
   // Recalculate proportional dimensions
   GROUND_Y = canvas.height - canvas.height * 0.083; // ~50px at 600px height
   CITY_WIDTH = canvas.width * 0.05; // ~40px at 800px width
@@ -64,15 +64,15 @@ function resizeCanvas() {
   BASE_WIDTH = canvas.width * 0.0625; // ~50px at 800px width
   BASE_HEIGHT = canvas.height * 0.033; // ~20px at 600px height
   EXPLOSION_MAX_RADIUS = canvas.height * 0.1; // ~60px at 600px height
-  
+
   // Reinitialize defenses with new dimensions
   if (cities.length > 0 || bases.length > 0) {
     const wasRunning = gameState.running;
-    const oldCities = cities.map(c => ({...c}));
-    const oldBases = bases.map(b => ({...b}));
-    
+    const oldCities = cities.map((c) => ({ ...c }));
+    const oldBases = bases.map((b) => ({ ...b }));
+
     initializeDefenses();
-    
+
     // Preserve state if game was running
     if (wasRunning) {
       cities.forEach((city, i) => {
@@ -93,20 +93,20 @@ function updateTimeOfDay() {
   // Cycle through times of day based on level
   const level = gameState.level;
   const cycleLength = 5; // Levels per complete cycle
-  const levelInCycle = ((level - 1) % cycleLength);
-  
+  const levelInCycle = (level - 1) % cycleLength;
+
   if (levelInCycle === 0) {
-    gameState.timeOfDay = 'morning';
+    gameState.timeOfDay = "morning";
   } else if (levelInCycle === 1) {
-    gameState.timeOfDay = 'noon';
+    gameState.timeOfDay = "noon";
   } else if (levelInCycle === 2) {
-    gameState.timeOfDay = 'afternoon';
+    gameState.timeOfDay = "afternoon";
   } else if (levelInCycle === 3) {
-    gameState.timeOfDay = 'evening';
+    gameState.timeOfDay = "evening";
   } else if (levelInCycle === 4) {
-    gameState.timeOfDay = 'night';
+    gameState.timeOfDay = "night";
   }
-  
+
   // Smooth transition progress (0-1)
   gameState.dayTransitionProgress = 0;
 }
@@ -114,38 +114,38 @@ function updateTimeOfDay() {
 function getBackgroundGradient() {
   const progress = gameState.dayTransitionProgress;
   let topColor, bottomColor;
-  
+
   switch (gameState.timeOfDay) {
-    case 'morning':
+    case "morning":
       // Light blue to soft blue
-      topColor = interpolateColor('#87CEEB', '#4169E1', progress);
-      bottomColor = interpolateColor('#FFF8DC', '#1e3a8a', progress);
+      topColor = interpolateColor("#87CEEB", "#4169E1", progress);
+      bottomColor = interpolateColor("#FFF8DC", "#1e3a8a", progress);
       break;
-    case 'noon':
+    case "noon":
       // Bright blue to deep blue
-      topColor = interpolateColor('#00BFFF', '#000080', progress);
-      bottomColor = interpolateColor('#F0F8FF', '#000033', progress);
+      topColor = interpolateColor("#00BFFF", "#000080", progress);
+      bottomColor = interpolateColor("#F0F8FF", "#000033", progress);
       break;
-    case 'afternoon':
+    case "afternoon":
       // Warm orange to deep blue
-      topColor = interpolateColor('#FF8C00', '#191970', progress);
-      bottomColor = interpolateColor('#FFE4B5', '#000033', progress);
+      topColor = interpolateColor("#FF8C00", "#191970", progress);
+      bottomColor = interpolateColor("#FFE4B5", "#000033", progress);
       break;
-    case 'evening':
+    case "evening":
       // Orange-red to purple
-      topColor = interpolateColor('#FF4500', '#4B0082', progress);
-      bottomColor = interpolateColor('#FFDAB9', '#2F1B14', progress);
+      topColor = interpolateColor("#FF4500", "#4B0082", progress);
+      bottomColor = interpolateColor("#FFDAB9", "#2F1B14", progress);
       break;
-    case 'night':
+    case "night":
       // Dark purple to black
-      topColor = interpolateColor('#2F1B69', '#000000', progress);
-      bottomColor = interpolateColor('#1a1a2e', '#000000', progress);
+      topColor = interpolateColor("#2F1B69", "#000000", progress);
+      bottomColor = interpolateColor("#1a1a2e", "#000000", progress);
       break;
     default:
-      topColor = '#000033';
-      bottomColor = '#000011';
+      topColor = "#000033";
+      bottomColor = "#000011";
   }
-  
+
   return { topColor, bottomColor };
 }
 
@@ -154,22 +154,24 @@ function interpolateColor(color1, color2, factor) {
   const r1 = parseInt(color1.slice(1, 3), 16);
   const g1 = parseInt(color1.slice(3, 5), 16);
   const b1 = parseInt(color1.slice(5, 7), 16);
-  
+
   const r2 = parseInt(color2.slice(1, 3), 16);
   const g2 = parseInt(color2.slice(3, 5), 16);
   const b2 = parseInt(color2.slice(5, 7), 16);
-  
+
   // Interpolate
   const r = Math.round(r1 + (r2 - r1) * factor);
   const g = Math.round(g1 + (g2 - g1) * factor);
   const b = Math.round(b1 + (b2 - b1) * factor);
-  
+
   // Convert back to hex
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  return `#${r.toString(16).padStart(2, "0")}${g
+    .toString(16)
+    .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
 
 // Initial canvas setup
-resizeCanvas();// City and Base Positions
+resizeCanvas(); // City and Base Positions
 function initializeDefenses() {
   const citySpacing = canvas.width / 8;
   const baseSpacing = canvas.width / 3;
@@ -519,7 +521,7 @@ function spawnEnemyMissiles() {
   // Mark wave as active
   gameState.waveActive = true;
   gameState.levelTransitioning = false;
-  
+
   // Progressive missile count increase - SUPER gentle for beginners
   // Level 1: 1 missile, Level 2: 2, Level 3: 2, Level 4: 3, Level 5: 3, etc.
   // Formula: Start with 1, add 1 every 2 levels
@@ -615,11 +617,16 @@ function checkGameOver() {
 
 function checkLevelComplete() {
   // Only check if wave is active, all missiles are gone, and not already transitioning
-  if (enemyMissiles.length === 0 && gameState.waveActive && !gameState.levelTransitioning && gameState.running) {
+  if (
+    enemyMissiles.length === 0 &&
+    gameState.waveActive &&
+    !gameState.levelTransitioning &&
+    gameState.running
+  ) {
     // Mark as transitioning to prevent multiple triggers
     gameState.levelTransitioning = true;
     gameState.waveActive = false;
-    
+
     // Bonus for surviving cities - increases with level
     const survivingCities = cities.filter((c) => c.alive).length;
     const cityBonus = survivingCities * (50 + gameState.level * 10);
@@ -634,12 +641,14 @@ function checkLevelComplete() {
 
     // Start next level
     gameState.level++;
-    
+
     // Update time of day for new level
     updateTimeOfDay();
 
     // Show level up message
-    gameState.levelUpMessage = `LEVEL ${gameState.level} - ${gameState.timeOfDay.charAt(0).toUpperCase() + gameState.timeOfDay.slice(1)}`;
+    gameState.levelUpMessage = `LEVEL ${gameState.level} - ${
+      gameState.timeOfDay.charAt(0).toUpperCase() + gameState.timeOfDay.slice(1)
+    }`;
     gameState.levelUpTimer = 120; // Show for 2 seconds (120 frames at 60fps)
 
     updateUI();
@@ -677,7 +686,7 @@ function endGame() {
 
   document.getElementById("finalScore").textContent = gameState.score;
   document.getElementById("gameOverScreen").classList.remove("hidden");
-  
+
   // Make sure instructions stay hidden during game over
   document.getElementById("instructions").classList.add("hidden");
 }
@@ -714,7 +723,7 @@ function gameLoop() {
   if (gameState.dayTransitionProgress < 1) {
     gameState.dayTransitionProgress += 0.005; // Smooth transition over ~200 frames
   }
-  
+
   // Draw background gradient
   const { topColor, bottomColor } = getBackgroundGradient();
   const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -725,10 +734,10 @@ function gameLoop() {
 
   // Draw stars (more visible at night)
   let starOpacity = 0.3; // Default for day
-  if (gameState.timeOfDay === 'night' || gameState.timeOfDay === 'evening') {
-    starOpacity = gameState.timeOfDay === 'night' ? 0.8 : 0.5;
+  if (gameState.timeOfDay === "night" || gameState.timeOfDay === "evening") {
+    starOpacity = gameState.timeOfDay === "night" ? 0.8 : 0.5;
   }
-  
+
   ctx.fillStyle = `rgba(255, 255, 255, ${starOpacity})`;
   const starCount = Math.floor(canvas.width / 16);
   for (let i = 0; i < starCount; i++) {
@@ -738,8 +747,10 @@ function gameLoop() {
   }
 
   // Add some twinkling stars at night
-  if (gameState.timeOfDay === 'night') {
-    ctx.fillStyle = `rgba(255, 255, 255, ${0.6 + Math.sin(Date.now() * 0.001) * 0.2})`;
+  if (gameState.timeOfDay === "night") {
+    ctx.fillStyle = `rgba(255, 255, 255, ${
+      0.6 + Math.sin(Date.now() * 0.001) * 0.2
+    })`;
     for (let i = 0; i < 20; i++) {
       const x = (i * 47) % canvas.width;
       const y = (i * 73) % (GROUND_Y - canvas.height * 0.083);
@@ -759,7 +770,14 @@ function gameLoop() {
     ctx.fillStyle = "#00ff00";
     ctx.font = "14px 'Courier New', monospace";
     ctx.fillText(`Level ${gameState.level}`, 20, 30);
-    ctx.fillText(`${gameState.timeOfDay.charAt(0).toUpperCase() + gameState.timeOfDay.slice(1)}`, 20, 50);
+    ctx.fillText(
+      `${
+        gameState.timeOfDay.charAt(0).toUpperCase() +
+        gameState.timeOfDay.slice(1)
+      }`,
+      20,
+      50
+    );
 
     const missilesPerWave = 2 + Math.floor((gameState.level - 1) / 2);
     ctx.fillStyle = "#ffaa00";
