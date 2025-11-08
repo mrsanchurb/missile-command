@@ -43,7 +43,8 @@ h1 {
     text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
   }
   to {
-    text-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00, 0 0 35px #00ff00, 0 0 45px #00ff00;
+    text-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00, 0 0 35px #00ff00,
+      0 0 45px #00ff00;
   }
 }
 
@@ -60,7 +61,8 @@ h1 {
 }
 
 @keyframes statsFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
     box-shadow: 0 0 15px rgba(0, 255, 0, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.3);
   }
@@ -107,7 +109,8 @@ h1 {
   cursor: crosshair;
   display: block;
   margin: 0 auto;
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 255, 0, 0.2);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(0, 255, 0, 0.2);
   background: #000033;
   max-width: 100%;
   height: auto;
@@ -116,10 +119,12 @@ h1 {
 
 @keyframes canvasGlow {
   from {
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 255, 0, 0.2);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.5),
+      0 0 40px rgba(0, 255, 0, 0.2);
   }
   to {
-    box-shadow: 0 0 25px rgba(0, 255, 0, 0.7), inset 0 0 25px rgba(0, 0, 0, 0.7), 0 0 50px rgba(0, 255, 0, 0.3);
+    box-shadow: 0 0 25px rgba(0, 255, 0, 0.7), inset 0 0 25px rgba(0, 0, 0, 0.7),
+      0 0 50px rgba(0, 255, 0, 0.3);
   }
 }
 
@@ -140,13 +145,16 @@ h1 {
 }
 
 @keyframes ammoFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
-    box-shadow: 0 0 15px rgba(255, 170, 0, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 15px rgba(255, 170, 0, 0.3),
+      inset 0 0 10px rgba(0, 0, 0, 0.3);
   }
   50% {
     transform: translateY(-1px);
-    box-shadow: 0 0 18px rgba(255, 170, 0, 0.4), inset 0 0 12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 18px rgba(255, 170, 0, 0.4),
+      inset 0 0 12px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -183,7 +191,8 @@ h1 {
 }
 
 @keyframes ammoPulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;
     transform: scale(1);
   }

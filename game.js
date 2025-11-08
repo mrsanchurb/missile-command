@@ -278,7 +278,7 @@ class PlayerMissile {
     if (this.trail.length > 20) this.trail.shift();
 
     // Update trail particles
-    this.trailParticles = this.trailParticles.filter(particle => {
+    this.trailParticles = this.trailParticles.filter((particle) => {
       particle.x += particle.vx;
       particle.y += particle.vy;
       particle.life--;
@@ -292,7 +292,7 @@ class PlayerMissile {
         y: this.y + (Math.random() - 0.5) * 4,
         vx: (Math.random() - 0.5) * 0.5,
         vy: (Math.random() - 0.5) * 0.5,
-        life: 15 + Math.random() * 10
+        life: 15 + Math.random() * 10,
       });
     }
 
@@ -313,7 +313,7 @@ class PlayerMissile {
 
   draw() {
     // Draw trail particles
-    this.trailParticles.forEach(particle => {
+    this.trailParticles.forEach((particle) => {
       const alpha = particle.life / 30;
       ctx.fillStyle = `rgba(100, 255, 100, ${alpha * 0.6})`;
       ctx.fillRect(particle.x - 1, particle.y - 1, 2, 2);
@@ -339,7 +339,7 @@ class PlayerMissile {
     // Draw missile with glow
     if (!this.reached) {
       // Glow effect
-      ctx.shadowColor = '#00ff00';
+      ctx.shadowColor = "#00ff00";
       ctx.shadowBlur = 8;
       ctx.fillStyle = "#00ff00";
       ctx.fillRect(this.x - 3, this.y - 3, 6, 6);
@@ -375,7 +375,7 @@ class EnemyMissile {
     if (this.trail.length > 25) this.trail.shift();
 
     // Update trail particles
-    this.trailParticles = this.trailParticles.filter(particle => {
+    this.trailParticles = this.trailParticles.filter((particle) => {
       particle.x += particle.vx;
       particle.y += particle.vy;
       particle.life--;
@@ -389,7 +389,7 @@ class EnemyMissile {
         y: this.y + (Math.random() - 0.5) * 3,
         vx: (Math.random() - 0.5) * 0.3,
         vy: (Math.random() - 0.5) * 0.3,
-        life: 20 + Math.random() * 15
+        life: 20 + Math.random() * 15,
       });
     }
 
@@ -401,7 +401,7 @@ class EnemyMissile {
 
   draw() {
     // Draw trail particles
-    this.trailParticles.forEach(particle => {
+    this.trailParticles.forEach((particle) => {
       const alpha = particle.life / 35;
       ctx.fillStyle = `rgba(255, 100, 100, ${alpha * 0.5})`;
       ctx.fillRect(particle.x - 1, particle.y - 1, 2, 2);
@@ -425,7 +425,7 @@ class EnemyMissile {
     ctx.stroke();
 
     // Draw missile with glow
-    ctx.shadowColor = '#ff0000';
+    ctx.shadowColor = "#ff0000";
     ctx.shadowBlur = 6;
     ctx.fillStyle = "#ff0000";
     ctx.fillRect(this.x - 2, this.y - 2, 4, 4);
@@ -482,11 +482,21 @@ class Explosion {
       let color;
       if (this.isPlayer) {
         // More varied colors for player explosions
-        const colors = ['rgb(255, 255, 0)', 'rgb(255, 200, 0)', 'rgb(255, 100, 0)', 'rgb(255, 255, 100)'];
+        const colors = [
+          "rgb(255, 255, 0)",
+          "rgb(255, 200, 0)",
+          "rgb(255, 100, 0)",
+          "rgb(255, 255, 100)",
+        ];
         color = colors[Math.floor(Math.random() * colors.length)];
       } else {
         // Red/orange tones for enemy explosions
-        const colors = ['rgb(255, 100, 100)', 'rgb(255, 50, 50)', 'rgb(200, 50, 50)', 'rgb(255, 150, 50)'];
+        const colors = [
+          "rgb(255, 100, 100)",
+          "rgb(255, 50, 50)",
+          "rgb(200, 50, 50)",
+          "rgb(255, 150, 50)",
+        ];
         color = colors[Math.floor(Math.random() * colors.length)];
       }
 
@@ -502,8 +512,15 @@ class Explosion {
 
     // Draw shockwave ring
     if (this.shockwaveRadius > 0) {
-      const shockwaveAlpha = Math.max(0, (this.shockwaveMaxRadius - this.shockwaveRadius) / this.shockwaveMaxRadius) * 0.4;
-      ctx.strokeStyle = this.isPlayer ? `rgba(255, 255, 255, ${shockwaveAlpha})` : `rgba(255, 100, 100, ${shockwaveAlpha})`;
+      const shockwaveAlpha =
+        Math.max(
+          0,
+          (this.shockwaveMaxRadius - this.shockwaveRadius) /
+            this.shockwaveMaxRadius
+        ) * 0.4;
+      ctx.strokeStyle = this.isPlayer
+        ? `rgba(255, 255, 255, ${shockwaveAlpha})`
+        : `rgba(255, 100, 100, ${shockwaveAlpha})`;
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.shockwaveRadius, 0, Math.PI * 2);
@@ -514,8 +531,12 @@ class Explosion {
     if (this.radius > 0) {
       // Outer glow
       const outerGradient = ctx.createRadialGradient(
-        this.x, this.y, 0,
-        this.x, this.y, this.radius * 1.2
+        this.x,
+        this.y,
+        0,
+        this.x,
+        this.y,
+        this.radius * 1.2
       );
       if (this.isPlayer) {
         outerGradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.3})`);
@@ -533,8 +554,12 @@ class Explosion {
 
       // Main explosion
       const gradient = ctx.createRadialGradient(
-        this.x, this.y, 0,
-        this.x, this.y, this.radius
+        this.x,
+        this.y,
+        0,
+        this.x,
+        this.y,
+        this.radius
       );
 
       if (this.isPlayer) {
@@ -556,8 +581,12 @@ class Explosion {
 
       // Inner core
       const coreGradient = ctx.createRadialGradient(
-        this.x, this.y, 0,
-        this.x, this.y, this.radius * 0.3
+        this.x,
+        this.y,
+        0,
+        this.x,
+        this.y,
+        this.radius * 0.3
       );
       if (this.isPlayer) {
         coreGradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.8})`);
@@ -605,8 +634,15 @@ class Particle {
 
   draw() {
     const alpha = this.life / this.maxLife;
-    ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
-    ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
+    ctx.fillStyle = this.color
+      .replace("rgb", "rgba")
+      .replace(")", `, ${alpha})`);
+    ctx.fillRect(
+      this.x - this.size / 2,
+      this.y - this.size / 2,
+      this.size,
+      this.size
+    );
   }
 }
 
@@ -729,7 +765,8 @@ function spawnEnemyMissiles() {
   // Mark wave as active AFTER spawning first missile
   gameState.waveActive = true;
   gameState.levelTransitioning = false;
-}function checkCollisions() {
+}
+function checkCollisions() {
   // Check enemy missiles hit by explosions
   for (let i = enemyMissiles.length - 1; i >= 0; i--) {
     let destroyed = false;
@@ -838,7 +875,9 @@ function checkLevelComplete() {
     updateTimeOfDay();
 
     // Show level up message
-    gameState.levelUpMessage = `LEVEL ${previousLevel} COMPLETE! Level ${gameState.level} - ${
+    gameState.levelUpMessage = `LEVEL ${previousLevel} COMPLETE! Level ${
+      gameState.level
+    } - ${
       gameState.timeOfDay.charAt(0).toUpperCase() + gameState.timeOfDay.slice(1)
     }`;
     gameState.levelUpTimer = 120; // Show for 2 seconds (120 frames at 60fps)
