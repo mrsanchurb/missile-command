@@ -260,6 +260,7 @@ class PlayerMissile {
     this.targetY = targetY;
     this.speed = canvas.height * 0.0083; // ~5px at 600px height
     this.trail = [];
+    this.trailParticles = [];
 
     const dx = targetX - startX;
     const dy = targetY - startY;
@@ -272,8 +273,28 @@ class PlayerMissile {
   update() {
     if (this.reached) return;
 
-    this.trail.push({ x: this.x, y: this.y });
-    if (this.trail.length > 15) this.trail.shift();
+    // Add current position to trail
+    this.trail.push({ x: this.x, y: this.y, life: 30 });
+    if (this.trail.length > 20) this.trail.shift();
+
+    // Update trail particles
+    this.trailParticles = this.trailParticles.filter(particle => {
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      particle.life--;
+      return particle.life > 0;
+    });
+
+    // Occasionally add trail particles
+    if (Math.random() < 0.3) {
+      this.trailParticles.push({
+        x: this.x + (Math.random() - 0.5) * 4,
+        y: this.y + (Math.random() - 0.5) * 4,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        life: 15 + Math.random() * 10
+      });
+    }
 
     this.x += this.vx;
     this.y += this.vy;
@@ -291,24 +312,38 @@ class PlayerMissile {
   }
 
   draw() {
-    // Draw trail
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
-    ctx.lineWidth = 1;
+    // Draw trail particles
+    this.trailParticles.forEach(particle => {
+      const alpha = particle.life / 30;
+      ctx.fillStyle = `rgba(100, 255, 100, ${alpha * 0.6})`;
+      ctx.fillRect(particle.x - 1, particle.y - 1, 2, 2);
+    });
+
+    // Draw enhanced trail
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
     for (let i = 0; i < this.trail.length; i++) {
       const point = this.trail[i];
+      const alpha = point.life / 30;
       if (i === 0) {
         ctx.moveTo(point.x, point.y);
       } else {
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.8})`;
         ctx.lineTo(point.x, point.y);
       }
+      point.life--; // Age the trail point
     }
     ctx.stroke();
 
-    // Draw missile
+    // Draw missile with glow
     if (!this.reached) {
+      // Glow effect
+      ctx.shadowColor = '#00ff00';
+      ctx.shadowBlur = 8;
       ctx.fillStyle = "#00ff00";
-      ctx.fillRect(this.x - 2, this.y - 2, 4, 4);
+      ctx.fillRect(this.x - 3, this.y - 3, 6, 6);
+      ctx.shadowBlur = 0; // Reset shadow
     }
   }
 }
@@ -325,6 +360,7 @@ class EnemyMissile {
     // Level 1: 0.3, Level 5: 0.5, Level 10: 0.75, Level 20: 1.25
     this.speed = 0.3 + (level - 1) * 0.05;
     this.trail = [];
+    this.trailParticles = [];
 
     const dx = this.targetX - this.x;
     const dy = this.targetY - this.y;
@@ -334,8 +370,28 @@ class EnemyMissile {
   }
 
   update() {
-    this.trail.push({ x: this.x, y: this.y });
-    if (this.trail.length > 20) this.trail.shift();
+    // Add current position to trail
+    this.trail.push({ x: this.x, y: this.y, life: 25 });
+    if (this.trail.length > 25) this.trail.shift();
+
+    // Update trail particles
+    this.trailParticles = this.trailParticles.filter(particle => {
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      particle.life--;
+      return particle.life > 0;
+    });
+
+    // Occasionally add trail particles
+    if (Math.random() < 0.2) {
+      this.trailParticles.push({
+        x: this.x + (Math.random() - 0.5) * 3,
+        y: this.y + (Math.random() - 0.5) * 3,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        life: 20 + Math.random() * 15
+      });
+    }
 
     this.x += this.vx;
     this.y += this.vy;
@@ -344,23 +400,36 @@ class EnemyMissile {
   }
 
   draw() {
-    // Draw trail
-    ctx.strokeStyle = "rgba(255, 0, 0, 0.3)";
-    ctx.lineWidth = 1;
+    // Draw trail particles
+    this.trailParticles.forEach(particle => {
+      const alpha = particle.life / 35;
+      ctx.fillStyle = `rgba(255, 100, 100, ${alpha * 0.5})`;
+      ctx.fillRect(particle.x - 1, particle.y - 1, 2, 2);
+    });
+
+    // Draw enhanced trail
+    ctx.strokeStyle = "rgba(255, 0, 0, 0.6)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
     for (let i = 0; i < this.trail.length; i++) {
       const point = this.trail[i];
+      const alpha = point.life / 25;
       if (i === 0) {
         ctx.moveTo(point.x, point.y);
       } else {
+        ctx.strokeStyle = `rgba(255, 0, 0, ${alpha * 0.6})`;
         ctx.lineTo(point.x, point.y);
       }
+      point.life--; // Age the trail point
     }
     ctx.stroke();
 
-    // Draw missile
+    // Draw missile with glow
+    ctx.shadowColor = '#ff0000';
+    ctx.shadowBlur = 6;
     ctx.fillStyle = "#ff0000";
     ctx.fillRect(this.x - 2, this.y - 2, 4, 4);
+    ctx.shadowBlur = 0; // Reset shadow
   }
 }
 
@@ -374,45 +443,134 @@ class Explosion {
     this.growing = true;
     this.life = EXPLOSION_DURATION;
     this.isPlayer = isPlayer;
+    this.particlesGenerated = false;
+    this.shockwaveRadius = 0;
+    this.shockwaveMaxRadius = isPlayer ? EXPLOSION_MAX_RADIUS * 1.5 : 60;
   }
 
   update() {
     if (this.growing) {
       this.radius += EXPLOSION_GROWTH_RATE;
+      this.shockwaveRadius += EXPLOSION_GROWTH_RATE * 0.7;
       if (this.radius >= this.maxRadius) {
         this.growing = false;
+        // Generate particles when explosion reaches max size
+        this.generateParticles();
       }
     } else {
       this.life--;
+      // Continue shockwave expansion
+      if (this.shockwaveRadius < this.shockwaveMaxRadius) {
+        this.shockwaveRadius += EXPLOSION_GROWTH_RATE * 0.3;
+      }
     }
     return this.life > 0;
   }
 
+  generateParticles() {
+    if (this.particlesGenerated) return;
+    this.particlesGenerated = true;
+
+    const particleCount = this.isPlayer ? 20 : 12; // More particles for player explosions
+
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.5;
+      const speed = 3 + Math.random() * 4;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed - Math.random() * 3; // Some upward bias
+
+      let color;
+      if (this.isPlayer) {
+        // More varied colors for player explosions
+        const colors = ['rgb(255, 255, 0)', 'rgb(255, 200, 0)', 'rgb(255, 100, 0)', 'rgb(255, 255, 100)'];
+        color = colors[Math.floor(Math.random() * colors.length)];
+      } else {
+        // Red/orange tones for enemy explosions
+        const colors = ['rgb(255, 100, 100)', 'rgb(255, 50, 50)', 'rgb(200, 50, 50)', 'rgb(255, 150, 50)'];
+        color = colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      const life = 70 + Math.random() * 50; // 1.2-2 seconds at 60fps
+      const size = 1.5 + Math.random() * 2.5;
+
+      particles.push(new Particle(this.x, this.y, vx, vy, color, life, size));
+    }
+  }
+
   draw() {
     const alpha = this.life / EXPLOSION_DURATION;
-    const gradient = ctx.createRadialGradient(
-      this.x,
-      this.y,
-      0,
-      this.x,
-      this.y,
-      this.radius
-    );
 
-    if (this.isPlayer) {
-      gradient.addColorStop(0, `rgba(255, 255, 100, ${alpha})`);
-      gradient.addColorStop(0.5, `rgba(255, 150, 0, ${alpha * 0.7})`);
-      gradient.addColorStop(1, `rgba(255, 50, 0, ${alpha * 0.3})`);
-    } else {
-      gradient.addColorStop(0, `rgba(255, 100, 100, ${alpha})`);
-      gradient.addColorStop(0.5, `rgba(255, 50, 50, ${alpha * 0.7})`);
-      gradient.addColorStop(1, `rgba(200, 0, 0, ${alpha * 0.3})`);
+    // Draw shockwave ring
+    if (this.shockwaveRadius > 0) {
+      const shockwaveAlpha = Math.max(0, (this.shockwaveMaxRadius - this.shockwaveRadius) / this.shockwaveMaxRadius) * 0.4;
+      ctx.strokeStyle = this.isPlayer ? `rgba(255, 255, 255, ${shockwaveAlpha})` : `rgba(255, 100, 100, ${shockwaveAlpha})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.shockwaveRadius, 0, Math.PI * 2);
+      ctx.stroke();
     }
 
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fill();
+    // Draw main explosion with multiple gradients
+    if (this.radius > 0) {
+      // Outer glow
+      const outerGradient = ctx.createRadialGradient(
+        this.x, this.y, 0,
+        this.x, this.y, this.radius * 1.2
+      );
+      if (this.isPlayer) {
+        outerGradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.3})`);
+        outerGradient.addColorStop(0.7, `rgba(255, 200, 0, ${alpha * 0.2})`);
+        outerGradient.addColorStop(1, `rgba(255, 100, 0, ${alpha * 0.1})`);
+      } else {
+        outerGradient.addColorStop(0, `rgba(255, 150, 150, ${alpha * 0.3})`);
+        outerGradient.addColorStop(0.7, `rgba(255, 50, 50, ${alpha * 0.2})`);
+        outerGradient.addColorStop(1, `rgba(200, 0, 0, ${alpha * 0.1})`);
+      }
+      ctx.fillStyle = outerGradient;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius * 1.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Main explosion
+      const gradient = ctx.createRadialGradient(
+        this.x, this.y, 0,
+        this.x, this.y, this.radius
+      );
+
+      if (this.isPlayer) {
+        gradient.addColorStop(0, `rgba(255, 255, 100, ${alpha})`);
+        gradient.addColorStop(0.3, `rgba(255, 200, 0, ${alpha * 0.9})`);
+        gradient.addColorStop(0.7, `rgba(255, 100, 0, ${alpha * 0.6})`);
+        gradient.addColorStop(1, `rgba(255, 50, 0, ${alpha * 0.2})`);
+      } else {
+        gradient.addColorStop(0, `rgba(255, 150, 150, ${alpha})`);
+        gradient.addColorStop(0.3, `rgba(255, 100, 100, ${alpha * 0.9})`);
+        gradient.addColorStop(0.7, `rgba(255, 50, 50, ${alpha * 0.6})`);
+        gradient.addColorStop(1, `rgba(200, 0, 0, ${alpha * 0.2})`);
+      }
+
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Inner core
+      const coreGradient = ctx.createRadialGradient(
+        this.x, this.y, 0,
+        this.x, this.y, this.radius * 0.3
+      );
+      if (this.isPlayer) {
+        coreGradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.8})`);
+        coreGradient.addColorStop(1, `rgba(255, 255, 0, ${alpha * 0.4})`);
+      } else {
+        coreGradient.addColorStop(0, `rgba(255, 200, 200, ${alpha * 0.8})`);
+        coreGradient.addColorStop(1, `rgba(255, 100, 100, ${alpha * 0.4})`);
+      }
+      ctx.fillStyle = coreGradient;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius * 0.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   checkCollision(missile) {
@@ -420,6 +578,35 @@ class Explosion {
     const dy = missile.y - this.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     return distance < this.radius;
+  }
+}
+
+// Particle Class for enhanced visual effects
+class Particle {
+  constructor(x, y, vx, vy, color, life, size = 2) {
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.color = color;
+    this.life = life;
+    this.maxLife = life;
+    this.size = size;
+    this.gravity = 0.1; // Gravity effect for debris
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vy += this.gravity; // Apply gravity
+    this.life--;
+    return this.life > 0;
+  }
+
+  draw() {
+    const alpha = this.life / this.maxLife;
+    ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
+    ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
   }
 }
 
@@ -518,29 +705,31 @@ function fireMissile(targetX, targetY) {
 }
 
 function spawnEnemyMissiles() {
-  // Mark wave as active
-  gameState.waveActive = true;
-  gameState.levelTransitioning = false;
-
-  // Progressive missile count increase - SUPER gentle for beginners
-  // Level 1: 1 missile, Level 2: 2, Level 3: 2, Level 4: 3, Level 5: 3, etc.
-  // Formula: Start with 1, add 1 every 2 levels
-  const missilesPerWave = 1 + Math.floor((gameState.level - 1) / 2);
+  // Progressive missile count increase - starts with 10 missiles for beginners
+  // Level 1: 10 missiles, Level 2: 11, Level 3: 12, etc.
+  // Formula: Start with 10, add 1 every level
+  const missilesPerWave = 10 + (gameState.level - 1);
 
   // Progressive spawn delay - decreases slowly with level
   // Level 1: 1200ms, Level 10: 900ms, Level 20: 700ms
   const spawnDelay = Math.max(600, 1200 - (gameState.level - 1) * 25);
 
-  for (let i = 0; i < missilesPerWave; i++) {
+  // Spawn first missile immediately
+  enemyMissiles.push(new EnemyMissile(gameState.level));
+
+  // Spawn remaining missiles with delay
+  for (let i = 1; i < missilesPerWave; i++) {
     setTimeout(() => {
-      if (gameState.running) {
+      if (gameState.running && gameState.waveActive) {
         enemyMissiles.push(new EnemyMissile(gameState.level));
       }
     }, i * spawnDelay);
   }
-}
 
-function checkCollisions() {
+  // Mark wave as active AFTER spawning first missile
+  gameState.waveActive = true;
+  gameState.levelTransitioning = false;
+}function checkCollisions() {
   // Check enemy missiles hit by explosions
   for (let i = enemyMissiles.length - 1; i >= 0; i--) {
     let destroyed = false;
@@ -568,6 +757,8 @@ function checkCollisions() {
           missile.y <= city.y
         ) {
           city.alive = false;
+          // Trigger screen shake when city is destroyed
+          gameState.screenShake = Math.max(gameState.screenShake, 12);
           explosions.push(
             new Explosion(
               city.x + city.width / 2,
@@ -640,13 +831,14 @@ function checkLevelComplete() {
     gameState.score += gameState.level * 25;
 
     // Start next level
+    const previousLevel = gameState.level;
     gameState.level++;
 
     // Update time of day for new level
     updateTimeOfDay();
 
     // Show level up message
-    gameState.levelUpMessage = `LEVEL ${gameState.level} - ${
+    gameState.levelUpMessage = `LEVEL ${previousLevel} COMPLETE! Level ${gameState.level} - ${
       gameState.timeOfDay.charAt(0).toUpperCase() + gameState.timeOfDay.slice(1)
     }`;
     gameState.levelUpTimer = 120; // Show for 2 seconds (120 frames at 60fps)
@@ -698,6 +890,8 @@ function startGame() {
   gameState.levelTransitioning = false;
   gameState.waveActive = false;
   gameState.gameStarted = true; // Mark that game has started
+  gameState.levelUpMessage = null; // Clear any previous level up message
+  gameState.levelUpTimer = 0; // Reset level up timer
 
   // Initialize time of day
   updateTimeOfDay();
@@ -723,6 +917,16 @@ function gameLoop() {
   if (gameState.dayTransitionProgress < 1) {
     gameState.dayTransitionProgress += 0.005; // Smooth transition over ~200 frames
   }
+
+  // Update screen shake
+  gameState.screenShake *= gameState.screenShakeDecay;
+  if (gameState.screenShake < 0.1) gameState.screenShake = 0;
+
+  // Apply screen shake
+  const shakeX = (Math.random() - 0.5) * gameState.screenShake;
+  const shakeY = (Math.random() - 0.5) * gameState.screenShake;
+  ctx.save();
+  ctx.translate(shakeX, shakeY);
 
   // Draw background gradient
   const { topColor, bottomColor } = getBackgroundGradient();
@@ -779,7 +983,7 @@ function gameLoop() {
       50
     );
 
-    const missilesPerWave = 2 + Math.floor((gameState.level - 1) / 2);
+    const missilesPerWave = 10 + (gameState.level - 1);
     ctx.fillStyle = "#ffaa00";
     ctx.font = "12px 'Courier New', monospace";
     ctx.fillText(`Missiles: ${missilesPerWave}`, 20, 70);
@@ -802,6 +1006,8 @@ function gameLoop() {
     for (let i = enemyMissiles.length - 1; i >= 0; i--) {
       const missile = enemyMissiles[i];
       if (missile.update()) {
+        // Trigger screen shake when missile hits ground
+        gameState.screenShake = Math.max(gameState.screenShake, 8);
         explosions.push(new Explosion(missile.targetX, missile.targetY, false));
         enemyMissiles.splice(i, 1);
       } else {
@@ -814,6 +1020,13 @@ function gameLoop() {
   explosions = explosions.filter((explosion) => {
     const alive = explosion.update();
     explosion.draw();
+    return alive;
+  });
+
+  // Update and draw particles
+  particles = particles.filter((particle) => {
+    const alive = particle.update();
+    particle.draw();
     return alive;
   });
 
@@ -845,7 +1058,7 @@ function gameLoop() {
 
     ctx.fillStyle = `rgba(255, 170, 0, ${alpha})`;
     ctx.font = "20px 'Courier New', monospace";
-    const missilesPerWave = 2 + Math.floor((gameState.level - 1) / 2);
+    const missilesPerWave = 10 + (gameState.level - 1);
     ctx.fillText(
       `${missilesPerWave} Missiles - Speed ${(
         0.3 +
@@ -862,6 +1075,8 @@ function gameLoop() {
 
   updateUI();
   updateBodyBackground(); // Keep body background in sync
+
+  ctx.restore(); // Restore context after screen shake
 
   requestAnimationFrame(gameLoop);
 }
