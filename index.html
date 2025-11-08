@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Missile Command</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>MISSILE COMMAND</h1>
+        <div class="stats">
+          <div class="stat">
+            <span class="label">SCORE:</span>
+            <span id="score">0</span>
+          </div>
+          <div class="stat">
+            <span class="label">LEVEL:</span>
+            <span id="level">1</span>
+          </div>
+          <div class="stat">
+            <span class="label">HIGH SCORE:</span>
+            <span id="highScore">0</span>
+          </div>
+        </div>
+      </div>
+
+      <canvas id="gameCanvas"></canvas>
+
+      <div class="controls">
+        <div class="ammo-display">
+          <div class="base-ammo">
+            <span>LEFT BASE</span>
+            <div id="leftAmmo" class="ammo-bar"></div>
+          </div>
+          <div class="base-ammo">
+            <span>CENTER BASE</span>
+            <div id="centerAmmo" class="ammo-bar"></div>
+          </div>
+          <div class="base-ammo">
+            <span>RIGHT BASE</span>
+            <div id="rightAmmo" class="ammo-bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="gameOverScreen" class="game-over hidden">
+        <h2>GAME OVER</h2>
+        <p>Final Score: <span id="finalScore">0</span></p>
+        <button id="restartBtn">PLAY AGAIN</button>
+      </div>
+
+      <div id="instructions" class="instructions">
+        <h3>HOW TO PLAY</h3>
+        <p>Click anywhere to fire missiles from the nearest base.</p>
+        <p>Destroy incoming missiles before they hit your cities or bases.</p>
+        <p>
+          Each level increases difficulty gradually with more and faster
+          missiles.
+        </p>
+        <p>Watch the day/night cycle change every 5 levels!</p>
+        <p>Press SPACE to start!</p>
+      </div>
+    </div>
+
+    <script src="game.js"></script>
+  </body>
+</html>
