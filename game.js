@@ -887,13 +887,21 @@ function checkLevelComplete() {
     // Update time of day for new level
     updateTimeOfDay();
 
-    // Show level up message
-    gameState.levelUpMessage = `LEVEL ${previousLevel} COMPLETE! Level ${
-      gameState.level
-    } - ${
+    // Show level up screen
+    const levelUpDetails = document.getElementById("levelUpDetails");
+    const missilesPerWave = 10 + (gameState.level - 1);
+    levelUpDetails.innerHTML = `
+      Level ${previousLevel} Complete!<br>
+      Next: Level ${gameState.level} - ${
       gameState.timeOfDay.charAt(0).toUpperCase() + gameState.timeOfDay.slice(1)
-    }`;
-    gameState.levelUpTimer = 120; // Show for 2 seconds (120 frames at 60fps)
+    }<br>
+      ${missilesPerWave} Missiles - Speed ${(
+      0.3 +
+      (gameState.level - 1) * 0.05
+    ).toFixed(2)}x<br>
+      Bonus: ${cityBonus} points
+    `;
+    document.getElementById("levelUpScreen").classList.remove("hidden");
 
     updateUI();
 
@@ -905,12 +913,8 @@ function checkLevelComplete() {
     });
     drawAmmoDisplay();
 
-    // Wait 2 seconds before spawning next wave
-    setTimeout(() => {
-      if (gameState.running) {
-        spawnEnemyMissiles();
-      }
-    }, 2000);
+    // Pause game loop until continue is clicked
+    gameState.running = false;
   }
 }
 
@@ -1035,7 +1039,7 @@ function gameLoop() {
       50
     );
 
-    const missilesPerWave = 10 + (gameState.level - 1);
+    const missilesPerWave = 10 + gameState.level - 1;
     ctx.fillStyle = "#ffaa00";
     ctx.font = "12px 'Courier New', monospace";
     ctx.fillText(`Missiles: ${missilesPerWave}`, 20, 70);
@@ -1087,42 +1091,6 @@ function gameLoop() {
     checkCollisions();
     checkGameOver();
     checkLevelComplete();
-  }
-
-  // Draw level up message
-  if (gameState.levelUpTimer > 0) {
-    gameState.levelUpTimer--;
-    const alpha = Math.min(1, gameState.levelUpTimer / 30);
-
-    ctx.save();
-    ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.7})`;
-    ctx.fillRect(0, canvas.height / 2 - 60, canvas.width, 120);
-
-    ctx.fillStyle = `rgba(0, 255, 0, ${alpha})`;
-    ctx.font = "bold 48px 'Courier New', monospace";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(
-      gameState.levelUpMessage,
-      canvas.width / 2,
-      canvas.height / 2 - 10
-    );
-
-    ctx.fillStyle = `rgba(255, 170, 0, ${alpha})`;
-    ctx.font = "20px 'Courier New', monospace";
-    const missilesPerWave = 10 + (gameState.level - 1);
-    ctx.fillText(
-      `${missilesPerWave} Missiles - Speed ${(
-        0.3 +
-        (gameState.level - 1) * 0.05
-      ).toFixed(2)}x`,
-      canvas.width / 2,
-      canvas.height / 2 + 30
-    );
-
-    ctx.restore();
-    ctx.textAlign = "left";
-    ctx.textBaseline = "alphabetic";
   }
 
   updateUI();
@@ -1183,3 +1151,10 @@ updateUI();
 drawAmmoDisplay();
 updateBodyBackground(); // Set initial body background
 gameLoop();
+
+document.getElementById("continueBtn").addEventListener("click", () => {
+  document.getElementById("levelUpScreen").classList.add("hidden");
+  gameState.running = true;
+  gameState.levelTransitioning = false;
+  spawnEnemyMissiles();
+});
