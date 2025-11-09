@@ -28,6 +28,8 @@ let gameState = {
   gameStarted: false, // Track if game has been started at least once
   timeOfDay: "morning", // Current time of day
   dayTransitionProgress: 0, // 0-1 progress through current time period
+  screenShake: 0, // Screen shake effect intensity
+  screenShakeDecay: 0.9, // How quickly screen shake fades
 };
 
 // Game Objects
@@ -87,6 +89,9 @@ function resizeCanvas() {
     }
   }
 }
+
+// Day/Night Cycle System - Removed for simplified gameplay
+// Keeping a fixed daytime background for consistent visual experience
 
 // Day/Night Cycle System
 function updateTimeOfDay() {
@@ -703,10 +708,15 @@ function drawAmmoDisplay() {
       ["leftAmmo", "centerAmmo", "rightAmmo"][index]
     );
     ammoElement.innerHTML = "";
-    for (let i = 0; i < base.ammo; i++) {
-      const dot = document.createElement("div");
-      dot.className = "ammo-dot";
-      ammoElement.appendChild(dot);
+    if (base.alive) {
+      // Show infinity symbol for infinite ammo
+      const infinitySymbol = document.createElement("div");
+      infinitySymbol.textContent = "∞";
+      infinitySymbol.style.fontSize = "16px";
+      infinitySymbol.style.color = "#00ff00";
+      infinitySymbol.style.textShadow = "0 0 5px #00ff00";
+      infinitySymbol.style.fontWeight = "bold";
+      ammoElement.appendChild(infinitySymbol);
     }
   });
 }
@@ -717,7 +727,8 @@ function findNearestBase(x) {
   let minDistance = Infinity;
 
   bases.forEach((base) => {
-    if (base.alive && base.ammo > 0) {
+    if (base.alive) {
+      // Only check if base is alive (infinite ammo)
       const distance = Math.abs(x - (base.x + base.width / 2));
       if (distance < minDistance) {
         minDistance = distance;
@@ -731,11 +742,13 @@ function findNearestBase(x) {
 
 function fireMissile(targetX, targetY) {
   const base = findNearestBase(targetX);
-  if (base) {
+  if (base && base.alive) {
+    // Only check if base is alive, not ammo
     const startX = base.x + base.width / 2;
     const startY = base.y - base.height;
     playerMissiles.push(new PlayerMissile(startX, startY, targetX, targetY));
-    base.ammo--;
+    // Removed ammo consumption for infinite missiles
+    // base.ammo--;
     drawAmmoDisplay();
   }
 }
@@ -860,9 +873,9 @@ function checkLevelComplete() {
     const cityBonus = survivingCities * (50 + gameState.level * 10);
     gameState.score += cityBonus;
 
-    // Bonus for remaining ammo
-    const remainingAmmo = bases.reduce((sum, base) => sum + base.ammo, 0);
-    gameState.score += remainingAmmo * (5 + gameState.level);
+    // Removed ammo bonus since we now have infinite missiles
+    // const remainingAmmo = bases.reduce((sum, base) => sum + base.ammo, 0);
+    // gameState.score += remainingAmmo * (5 + gameState.level);
 
     // Level completion bonus
     gameState.score += gameState.level * 25;
